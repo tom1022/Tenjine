@@ -1,0 +1,60 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+
+{% if data.grave_data %}
+<div class="notification is-warning">このファイルは非公開または削除にされています</div>
+{% endif %}
+<h2 class="title">ファイルの編集</h2>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="notification is-danger">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+<form id="form" action="{{ url_for('files_bp.edit_file', id=file_id) }}" method="post"
+    enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    {{ form.hidden_tag() }}
+    <div class="field">
+        <div class="field">
+            <label class="label" data-tooltip="このファイルを発表した年度">
+                発表年度
+            </label>
+            <div class="select">
+                <select id="{{ form.pubyear.id }}" name="{{ form.pubyear.name }}">
+                    {% for year, label in form.pubyear.choices %}
+                    <option value="{{ year }}" {% if year==file.pubyear %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        {% if file.type != 5 and file.type != 6%}
+        <div class="field">
+            <label class="label" data-tooltip="このファイルの形式">
+                タイプ
+            </label>
+            <div class="select">
+                <select id="{{ form.type.id }}" name="{{ form.type.name }}">
+                    {% for value, label in form.type.choices %}
+                    <option value="{{ value }}" {% if value==file.type %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        {% endif %}
+        <div class="field">
+            <label class="label" data-tooltip="このファイルの概要">
+                概要
+            </label>
+            {% if form.summary.errors %}
+            {% for error in form.summary.errors %}
+            <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+            <textarea class="textarea" id="{{ form.summary.id }}" name="{{ form.summary.name }}">{{ file.summary }}</textarea>
+        </div>
+        <input value="この内容で更新" type="submit" class="button">
+    </div>
+</form>
+{% endblock %}

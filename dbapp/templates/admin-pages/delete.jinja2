@@ -1,0 +1,72 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+
+<h2>レコードの削除</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="notification {{ category }}">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+<form action="{{ url_for('admin_bp.delete') }}" method="post">
+    {{ form.csrf_token }}
+    <div class="field">
+        <div class="field">
+            <label class="label">
+                削除対象のレコードタイプ
+            </label>
+            <div class="select">
+                {{ form.type }}
+            </div>
+        </div>
+        <script>
+            $(document).ready(function () {
+                // select要素の変更を監視
+                $('#type').change(function () {
+                    var selectedOption = $(this).val();
+                    if (selectedOption == 'TAG' || selectedOption == 'NEWS') {
+                        // クラスを追加
+                        $('#needOption').addClass('ui-helper-hidden-accessible');
+                    } else {
+                        // クラスを削除
+                        $('#needOption').removeClass('ui-helper-hidden-accessible');
+                    }
+                });
+            });
+        </script>
+        <div class="field">
+            <label class="label">
+                削除対象のレコード識別符号
+            </label>
+            {% if form.id.errors %}
+            {% for error in form.id.errors %}
+            <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+            {{ form.id(class_="input") }}
+        </div>
+        <div id="needOption">
+            <div class="field">
+                <label class="label">
+                    削除理由
+                </label>
+                {% if form.reason.errors %}
+                {% for error in form.reason.errors %}
+                <span style="color: red;">{{ error }}</span>
+                {% endfor %}
+                {% endif %}
+                {{ form.reason(class_="textarea") }}
+            </div>
+            <div class="field">
+                <label class="label" data-tooltip="これを選択しなかった場合ファイルは削除されず、非公開となります">
+                    完全に削除する
+                </label>
+                このファイルを完全に削除します {{ form.delete(class_="checkbox") }}
+            </div>
+        </div>
+        <input type="submit" class="button">
+    </div>
+</form>
+
+{% endblock %}

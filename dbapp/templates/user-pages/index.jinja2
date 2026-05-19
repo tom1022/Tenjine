@@ -1,0 +1,69 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+<div>
+    <h2 class="title">アクセス数の多い研究</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>順位</th>
+                <th>タイトル</th>
+                <th>アクセス数</th>
+            </tr>
+        </thead>
+        {% for study in access_rank %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td class="limit-1"><a href="{{ url_for('user_bp.study', id = study.id) }}">{{ study.name }}</a></td>
+            <td>{{ study.get_total_access_count() }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div>
+    <h2 class="title">プレビュー数の多い研究</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>順位</th>
+                <th>タイトル</th>
+                <th>プレビュー数</th>
+            </tr>
+        </thead>
+        {% for study in preview_rank %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td class="limit-1"><a href="{{ url_for('user_bp.study', id = study.id) }}">{{ study.name }}</a></td>
+            <td>{{ study.get_total_preview_count() }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div>
+    <h2 class="title">高く評価されている研究</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>順位</th>
+                <th>タイトル</th>
+            </tr>
+        </thead>
+        {% for study in helpful_rank %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td class="limit-1"><a href="{{ url_for('user_bp.study', id = study.id) }}">{{ study.name }}</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<!-- <div>
+    <h2>タグ登録数ランキング</h2>
+    {% for tag in tags %}
+    <table>
+        <tr>
+            <td><a href="/tag?query={{ tag.tag }}">{{ tag.tag }}</a></td>
+            <td></td>
+        </tr>
+    </table>
+    {% endfor %}
+</div> -->
+{% endblock %}

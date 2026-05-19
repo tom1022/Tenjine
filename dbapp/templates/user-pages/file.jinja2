@@ -1,0 +1,101 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+
+{% if data.grave_data %}
+<div class="notification is-warning">このファイルは非公開または削除にされています</div>
+{% endif %}
+<h2 class="title">{{ data.name }}</h2>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<p>
+    {% for message in messages %}
+    {{ messages | safe }}
+    {% endfor %}
+</p>
+{% endif %}
+{% endwith %}
+<h3 class="title is-4">概要</h3>
+<div class="container">
+    {% for para in summary %}
+    {{ para }}<br>
+    {% endfor %}
+</div>
+<h3 class="title is-4">詳細情報</h3>
+<div class="container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>項目</th>
+                <th>内容</th>
+            </tr>
+        </thead>
+        <tr>
+            <th>タイトル</th>
+            <td>{{ data.name }}</td>
+        </tr>
+        <tr>
+            <th>研究グループ</th>
+            <td><a href="{{ url_for('user_bp.study', id = data.study_id ) }}">{{ data.study.name }}</a></td>
+        </tr>
+        {% if current_user.is_authenticated %}
+        {% if current_user.has_role('Admin') %}
+        <tr>
+            <th>作成者</th>
+            <td>
+                <div class="tags">
+                <a href="{{ url_for('admin_bp.user_detail', id = data.author[0].id) }}" class="tag is-info is-light">{{ data.author[0].display_name }}</a>
+                </div>
+            </td>
+        </tr>
+        {% endif%}
+        {% endif %}
+        <tr>
+            <th>追加日</th>
+            <td>{{ data.create_at.strftime('%Y年%m月%d日') }}</td>
+        </tr>
+        <tr>
+            <th>発表年</th>
+            <td>{{ data.pubyear }}年</td>
+        </tr>
+        <tr>
+            <th>タイプ</th>
+            <td>{{ filetype }}</td>
+        </tr>
+        <tr>
+            <th>タグ</th>
+            <td>
+                {% for tag in data.study.tags %}
+                    <a href="{{ url_for('user_bp.tag', id = tag.id) }}" class="tag tooltip">
+                        {{ tag.name }}
+                        <span class="tooltiptext limit-5 box">{{ tag.tips }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>プレビュー</th>
+            <td>
+                <a href="{{ url_for('user_bp.preview', id = data.id) }}">{{ data.name }}</a>
+            </td>
+        </tr>
+        <tr>
+            <th>プレビュー数</th>
+            <td>{{ data.preview_count }}</td>
+        </tr>
+        <tr>
+            <th>アクセス数</th>
+            <td>{{ data.access_count }}</td>
+        </tr>
+        <tr>
+            <th>SHA256</th>
+            <td>{{ data.hashsum }}</td>
+        </tr>
+        <tr>
+            <th>レコード識別符号</th>
+            <td>{{ data.id }}</td>
+        </tr>
+    </table>
+</div>
+
+{% endblock %}

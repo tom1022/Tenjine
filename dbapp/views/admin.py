@@ -16,7 +16,7 @@ admin_bp = Blueprint('admin_bp', __name__, template_folder='templates')
 @admin_required
 def index():
     return render_template(
-        'admin-pages/index.html',
+        'admin-pages/index.jinja2',
         title='管理者ページ'
         )
 
@@ -29,7 +29,7 @@ def edit_tag(id):
     if not data:
         abort(404)
     if request.method == 'GET':
-        return render_template('admin-pages/edit_tag.html', title='タグの編集', data=data, form=form, tag_id=data.id)
+        return render_template('admin-pages/edit_tag.jinja2', title='タグの編集', data=data, form=form, tag_id=data.id)
     if request.method == 'POST':
         try:
             data.tag = form.title.data
@@ -44,7 +44,7 @@ def edit_tag(id):
 
         return redirect(url_for('admin_bp.edit_tag', id=id))
 
-    return render_template('admin-pages/edit_tag.html', title='タグの編集(エラー)', data=data, form=form, tag_id=data.id)
+    return render_template('admin-pages/edit_tag.jinja2', title='タグの編集(エラー)', data=data, form=form, tag_id=data.id)
 
 
 @admin_bp.route('/result')
@@ -57,7 +57,7 @@ def upload_result():
     except KeyError:
         abort(400)
 
-    return render_template('admin-pages/result.html', title="結果", result=result)
+    return render_template('admin-pages/result.jinja2', title="結果", result=result)
 
 @admin_bp.route('/user')
 @login_required
@@ -68,7 +68,7 @@ def user_list():
     rows = users[(page - 1)*50: page*50]
     pagination = Pagination(page=page, total=len(users), per_page=50, css_framework="BULMA")
     return render_template(
-        'admin-pages/user_list.html',
+        'admin-pages/user_list.jinja2',
         title='ユーザーの一覧',
         rows=rows,
         pagination=pagination
@@ -81,27 +81,35 @@ def user_detail(id):
     user = USERS.query.filter(USERS.id==id).one_or_none()
     if not user:
         abort(404)
-    return render_template('admin-pages/user_detail.html', title='ユーザーの詳細', user=user)
+    return render_template('admin-pages/user_detail.jinja2', title='ユーザーの詳細', user=user)
 
 
 @admin_bp.route('/role', methods=['GET'])
 @login_required
 @admin_required
 def role():
-    admin = ROLES.query.filter(ROLES.name=='Admin').one_or_none()
-    admins_list = USER_ROLE.query.filter(USER_ROLE.role_id==admin.id).all()
-    admins =[USERS.query.filter(USERS.id==x.user_id).one() for x in admins_list]
+    admins = (
+        db.session.query(USERS)
+        .join(USER_ROLE, USER_ROLE.user_id == USERS.id)
+        .join(ROLES, ROLES.id == USER_ROLE.role_id)
+        .filter(ROLES.name == 'Admin')
+        .all()
+    )
     add_form = AddRoleForm()
     del_form = DelRoleForm()
-    return render_template('admin-pages/role.html', title='管理者権限の管理', admins=admins, add_form=add_form, del_form=del_form)
+    return render_template('admin-pages/role.jinja2', title='管理者権限の管理', admins=admins, add_form=add_form, del_form=del_form)
 
 @admin_bp.route('/addrole', methods=['POST'])
 @login_required
 @admin_required
 def addrole():
-    admin = ROLES.query.filter(ROLES.name=='Admin').one_or_none()
-    admins_list = USER_ROLE.query.filter(USER_ROLE.role_id==admin.id).all()
-    admins = [USERS.query.filter(USERS.id==x.user_id).one() for x in admins_list]
+    admins = (
+        db.session.query(USERS)
+        .join(USER_ROLE, USER_ROLE.user_id == USERS.id)
+        .join(ROLES, ROLES.id == USER_ROLE.role_id)
+        .filter(ROLES.name == 'Admin')
+        .all()
+    )
     add_form = AddRoleForm()
     del_form = DelRoleForm()
     if add_form.validate_on_submit():
@@ -118,15 +126,19 @@ def addrole():
 
         return redirect(url_for('admin_bp.role'))
     
-    return render_template('admin-pages/role.html', title='管理者権限の管理(エラー)', admins=admins, add_form=add_form, del_form=del_form)
+    return render_template('admin-pages/role.jinja2', title='管理者権限の管理(エラー)', admins=admins, add_form=add_form, del_form=del_form)
 
 @admin_bp.route('/delrole', methods=['POST'])
 @login_required
 @admin_required
 def delrole():
-    admin = ROLES.query.filter(ROLES.name=='Admin').one_or_none()
-    admins_list = USER_ROLE.query.filter(USER_ROLE.role_id==admin.id).all()
-    admins = [USERS.query.filter(USERS.id==x.user_id).one() for x in admins_list]
+    admins = (
+        db.session.query(USERS)
+        .join(USER_ROLE, USER_ROLE.user_id == USERS.id)
+        .join(ROLES, ROLES.id == USER_ROLE.role_id)
+        .filter(ROLES.name == 'Admin')
+        .all()
+    )
     add_form = AddRoleForm()
     del_form = DelRoleForm()
     if del_form.validate_on_submit():
@@ -144,7 +156,7 @@ def delrole():
 
         return redirect(url_for('admin_bp.role'))
     
-    return render_template('admin-pages/role.html', title='管理者権限の管理(エラー)', admins=admins, add_form=add_form, del_form=del_form)
+    return render_template('admin-pages/role.jinja2', title='管理者権限の管理(エラー)', admins=admins, add_form=add_form, del_form=del_form)
 
 
 
@@ -153,7 +165,7 @@ def delrole():
 @admin_required
 def postnews():
     form = PostNewsForm()
-    return render_template('admin-pages/postnews.html', title="お知らせ作成", form=form)
+    return render_template('admin-pages/postnews.jinja2', title="お知らせ作成", form=form)
 
 @admin_bp.route('/postnews', methods=['POST'])
 @login_required
@@ -179,7 +191,7 @@ def delete():
     message = ''
     status = ''
     if request.method == 'GET':
-        return render_template('admin-pages/delete.html', title="レコードの削除", form=form)
+        return render_template('admin-pages/delete.jinja2', title="レコードの削除", form=form)
 
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -306,4 +318,4 @@ def delete():
 
     if message:
         flash(message, status)
-    return render_template('admin-pages/delete.html', title="レコードの削除", form=form)
+    return render_template('admin-pages/delete.jinja2', title="レコードの削除", form=form)

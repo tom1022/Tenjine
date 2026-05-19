@@ -1,0 +1,35 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+{% if result["success"] != [] %}
+    <h2 class="title">成功したファイル</h2>
+    <table class="table">
+    <thead>
+        <tr>
+            <th>タイトル</th>
+        </tr>
+    </thead>
+        {% for page in result["success"] %}
+            <tr>
+                <td class="limit-1"><a href="/page/{{ page['id'] }}">{{ page['title'] }}</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+{% if result["failed"] != [] %}
+    <h2 class="title">失敗したファイル</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>タイトル</th>
+                <th>理由</th>
+            </tr>
+        </thead>
+    {% for page in result["fail"] %}
+        <tr>
+            <td class="limit-1">{{ page["title"] }}</td>
+            <td>{{ page["reason"] }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endif %}
+{% endblock %}

@@ -34,7 +34,7 @@ def ADAuth(username, password):
 def login():
     form = LoginForm()
     if request.method == 'GET':
-        return render_template('auth-pages/login.html', title="ログイン", form=form)
+        return render_template('auth-pages/login.jinja2', title="ログイン", form=form)
 
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -42,7 +42,7 @@ def login():
                 if current_user.has_role('Admin'):
                     url = 'admin_bp.index'
                 else:
-                    url = 'logined_bp.mypage'
+                    url = 'dashboard_bp.mypage'
                 return redirect(url_for(url))
 
             form_name = request.form.get('name')
@@ -80,7 +80,7 @@ def login():
                         if user.has_role('Admin'):
                             next_page = url_for('admin_bp.index')
                         else:
-                            next_page = url_for('logined_bp.mypage')
+                            next_page = url_for('dashboard_bp.mypage')
 
                     if 'accessed_files' in session:
                         for file_id in session['accessed_files']:
@@ -103,7 +103,7 @@ def login():
                     return redirect(next_page)
 
     flash('アカウントが存在しないかパスワードが間違っています')
-    return render_template('auth-pages/login.html', title="ログイン", form=form)
+    return render_template('auth-pages/login.jinja2', title="ログイン", form=form)
 
 
 @auth.route('/logout')

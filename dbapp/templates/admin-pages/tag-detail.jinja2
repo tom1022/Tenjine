@@ -1,0 +1,57 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+<h2>タグの編集</h2>
+<input type="button" value="編集を有効化" onclick="enableEditor()">
+<form id="form" action="/tag" method="post" enctype="multipart/form-data">
+  {{ form.csrf_token }}
+  {{ form.hidden_tag() }}
+  <div class="divtable-container">
+    <div class="divtable-row">
+      <div class="divtable-title">タグ名</div>
+      <div class="divtable-data">
+        {% if form.title.errors %}
+        {% for error in form.title.errors %}
+        <span style="color: red;font-size: small;">{{ error }}</span>
+        {% endfor %}
+        {% endif %}
+        {{ form.title(class_="textbox", disabled=True, id="title", value=data.tag) }}
+      </div>
+    </div>
+    <div class="divtable-row">
+      <div class="divtable-title">種別</div>
+      <div class="divtable-data">
+        {% set types = ['年別', '一般', '受賞'] %}
+        {{ types[data.type-1] }}
+      </div>
+    </div>
+    <div class="divtable-row">
+      <div class="divtable-title">概要</div>
+      <div class="divtable-data-text">
+        <textarea name="tips" id="tips" disabled>{{ data.tips }}</textarea>
+      </div>
+    </div>
+    </div>
+    <input value="この内容に変更" type="button" onclick="addTags()">
+    <input value="このタグを削除" type="button">
+  </div>
+  <br>
+</form>
+<script>
+  function addTags() {
+    tags = [];
+    tagID = $('span[id^="tag"]');
+    for (i = 0; i < $('.tags .tag').length; i++) {
+      tags[i] = [$(tagID[i]).text()];
+    };
+    tags.unshift($('#pubYear').val());
+    $('#tags').val(JSON.stringify(tags));
+    $('form').submit()
+  };
+  function enableEditor(){
+    var elems = ["#title", "#tips"]
+    for (const elem of elems) {
+      $(elem).prop('disabled', false)
+    }
+  }
+</script>
+{% endblock %}

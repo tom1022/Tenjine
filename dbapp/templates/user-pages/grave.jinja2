@@ -1,0 +1,13 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+
+<h2>{{ title }}</h2>
+<div class="container">
+    <p>
+        このファイルは削除されました
+    </p>
+    <p>
+        削除理由: {{ data.reason }}
+    </p>
+</div>
+{% endblock %}

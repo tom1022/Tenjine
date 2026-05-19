@@ -1,0 +1,17 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+<h2 class="title">{{ results.name }}</h2>
+{% for para in tips %}
+{{ para }}<br>
+{% endfor %}
+<br>
+レコード識別符号: {{ results.id }}
+{% if current_user.is_authenticated %}
+{% if current_user.has_role('Admin') %}
+<br>
+<a href="{{ url_for('admin_bp.edit_tag', id = results.id) }}" class="button is-primary">このタグを編集する</a>
+{% endif %}
+{% endif %}
+<hr>
+{% include "user-pages/studylist.html" %}
+{% endblock %}

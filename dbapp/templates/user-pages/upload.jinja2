@@ -1,0 +1,97 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+
+<h2 class="title">ファイルの追加</h2>
+<form id="form" action="{{ url_for('files_bp.upload', parent_id=parent_id) }}" method="post" enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    {{ form.hidden_tag() }}
+    <div class="field">
+        <label class="label" data-tooltip="PDFドキュメントまたはMP4動画のみ対応">
+            アップロード
+        </label>
+        <div class="file">
+            <label class="file-label" id="file-form">
+                {{ form.file(accept="application/pdf, image/png, video/mp4", class_="file-input") }}
+                <span class="file-cta">
+                    <span class="file-label">
+                        ファイルを選択…
+                    </span>
+                </span>
+            </label>
+            <script>
+                $("#file").on('change', function () {
+                    fileForm = new FormData($('#form')[0]);
+                    $(".file-name").remove();
+                    var fileData = $("#file").prop('files')[0];
+                    if (fileData) {
+                        var fileName = fileData.name;
+                        var fileExtension = fileName.split('.').pop();
+                        if (fileExtension == "mp4") {
+                            $("#summary-support").addClass("ui-helper-hidden-accessible");
+                            $('select[name="type"] > option[value="5"]').prop('selected', true);
+                        } else if (fileExtension == "png") {
+                            $("#summary-support").addClass("ui-helper-hidden-accessible");
+                            $('select[name="type"] > option[value="6"]').prop('selected', true);
+                        } else {
+                            $("#summary-support").removeClass("ui-helper-hidden-accessible");
+                            $('select[name="type"] > option[value="1"]').prop('selected', true);
+                        };
+                    };
+                    $("#file-form").append('<span class="file-name">' + fileName + '</span>');
+                    $("#generate").attr('href', 'javascript:generate()');
+                });
+                function generate() {
+                    pdfdata = new FormData($('#form')[0]);
+                    console.log(pdfdata);
+                    if (pdfdata != '') {
+                        $.ajax({
+                            url: "{{ url_for('api_bp.file_receive')}}",
+                            type: "POST",
+                            data: pdfdata,
+                            cache: false,
+                            contentType: false,
+                            processData: false,
+                            dataType: "html"
+                        }).done(function (data, textStatus, jqXHR) {
+                            $("#pubyear").val(JSON.parse(data)['pubyear']);
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                            alert("fail");
+                        });
+                    }
+                }
+            </script>
+        </div>
+        <div class="filed" id="summary-support">
+            <a href="javascript:void(0)" id="generate" class="button">入力補助</a>
+        </div>
+        <div class="field">
+            <label class="label" data-tooltip="このファイルを発表した年度">
+                発表年度
+            </label>
+            <div class="select">
+                {{ form.pubyear }}
+            </div>
+        </div>
+        <div class="field">
+            <label class="label" data-tooltip="このファイルの形式">
+                タイプ
+            </label>
+            <div class="select">
+                {{ form.type }}
+            </div>
+        </div>
+        <div class="field">
+            <label class="label" data-tooltip="このファイルの概要">
+                概要
+            </label>
+            {% if form.summary.errors %}
+            {% for error in form.summary.errors %}
+            <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+            {% endif %}
+            {{ form.summary(class_="textarea", row="5") }}
+        </div>
+        <input value="この内容で追加" type="submit" class="button">
+    </div>
+</form>
+{% endblock %}

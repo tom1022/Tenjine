@@ -32,7 +32,7 @@ def index():
     ).limit(10)
 
     return render_template(
-        'user-pages/index.html',
+        'user-pages/index.jinja2',
         title='トップページ',
         access_rank=access_rank,
         preview_rank=preview_rank,
@@ -42,7 +42,7 @@ def index():
 @user_bp.route('/taglist')
 def taglist():
     tags = TAGS.query.order_by(TAGS.name).all()
-    return render_template('user-pages/taglist.html', title="タグ一覧", tags=tags)
+    return render_template('user-pages/taglist.jinja2', title="タグ一覧", tags=tags)
 
 @user_bp.route('/study/<id>')
 def study(id):
@@ -55,7 +55,7 @@ def study(id):
     if current_user.is_authenticated:
         admin = current_user.has_role('Admin')
     if grave is not None and not admin:
-        return render_template("user-pages/grave.html", title="削除された研究", data=grave), 404
+        return render_template("user-pages/grave.jinja2", title="削除された研究", data=grave), 404
 
     votes = VOTES.query.filter(VOTES.study_id==data.id)
     helpful_votes = votes.filter(VOTES.helpful==True).count()
@@ -73,7 +73,7 @@ def study(id):
     summary = convertMarkdown(data.raw_markdown)
 
     return render_template(
-        'user-pages/study.html',
+        'user-pages/study.jinja2',
         title=data.name,
         data=FilterStudyFiles(data, admin),
         summary=summary,
@@ -94,10 +94,10 @@ def file(id):
     if current_user.is_authenticated:
         admin = current_user.has_role('Admin')
     if grave is not None and not admin:
-        return render_template("user-pages/grave.html", title="削除されたファイル", data=grave), 404
+        return render_template("user-pages/grave.jinja2", title="削除されたファイル", data=grave), 404
     parent_grave = STUDYGRAVES.query.filter(STUDYGRAVES.study_id==data.study_id).one_or_none()
     if parent_grave is not None and not admin:
-        return render_template("user-pages/grave.html", title="削除された研究", data=parent_grave), 404
+        return render_template("user-pages/grave.jinja2", title="削除された研究", data=parent_grave), 404
 
 
     # セッションにアクセス情報がまだ存在しない場合、アクセス情報をセッションに追加
@@ -126,7 +126,7 @@ def file(id):
     filetype = filetypes[data.type-1]
 
     return render_template(
-        'user-pages/file.html',
+        'user-pages/file.jinja2',
         title=data.name,
         data=data,
         filetype=filetype,
@@ -144,7 +144,7 @@ def preview(id):
     if current_user.is_authenticated:
         admin = current_user.has_role('Admin')
     if grave is not None and not admin:
-        return render_template("user-pages/grave.html", title="削除されたファイル", data=grave), 404
+        return render_template("user-pages/grave.jinja2", title="削除されたファイル", data=grave), 404
 
     # セッションにプレビュー情報がまだ存在しない場合、プレビュー情報をセッションに追加
     if 'previewed_files' not in session:
@@ -194,7 +194,7 @@ def newslist():
     rows = newslist[(page - 1)*10: page*10]
     pagination = Pagination(page=page, total=len(newslist), per_page=10, css_framework="BULMA")
 
-    return render_template('user-pages/newslist.html', title="お知らせ", rows=rows, pagination=pagination)
+    return render_template('user-pages/newslist.jinja2', title="お知らせ", rows=rows, pagination=pagination)
 
 @user_bp.route('/news/<id>')
 def news(id=''):
@@ -206,7 +206,7 @@ def news(id=''):
 
     title = news.name
 
-    return render_template('user-pages/news.html', title=title, news_text=news_text, news=news)
+    return render_template('user-pages/news.jinja2', title=title, news_text=news_text, news=news)
 
 @user_bp.route('/search', methods=['GET'])
 def search():
@@ -252,7 +252,7 @@ def search():
     pagination = Pagination(page=page, total=len(result_pages[0]), per_page=per_page, css_framework="BULMA")
 
     return render_template(
-        'user-pages/search.html',
+        'user-pages/search.jinja2',
         title=result_pages[1],
         rows=rows,
         pagination=pagination
@@ -285,7 +285,7 @@ def tag(id=None):
         rows = studies[(page - 1)*10: page*10]
         pagination = Pagination(page=page, total=len(studies), per_page=10, css_framework="BULMA")
         return render_template(
-            'user-pages/tag.html',
+            'user-pages/tag.jinja2',
             title=results.name,
             tips=tips,
             flag=1,

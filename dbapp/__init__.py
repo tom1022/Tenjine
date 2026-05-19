@@ -1,6 +1,13 @@
-import random, string, sys, threading
+import random, string, threading
+import logging
 from functools import wraps
 from flask import Flask, abort, render_template
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(name)s: %(message)s',
+)
+logger = logging.getLogger(__name__)
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
 from flask_marshmallow import Marshmallow
@@ -54,13 +61,19 @@ app.register_blueprint(auth)
 from dbapp.views.admin import admin_bp
 app.register_blueprint(admin_bp, url_prefix='/admin')
 
-from dbapp.views.logined import logined_bp
-app.register_blueprint(logined_bp, url_prefix='/')
+from dbapp.views.studies import studies_bp
+app.register_blueprint(studies_bp, url_prefix='/')
+
+from dbapp.views.files import files_bp
+app.register_blueprint(files_bp, url_prefix='/')
+
+from dbapp.views.dashboard import dashboard_bp
+app.register_blueprint(dashboard_bp, url_prefix='/')
 
 
 @app.errorhandler(404)
 def notfound(_error):
-    return render_template('errors/404.html'), 404
+    return render_template('errors/404.jinja2'), 404
 
 
 def generate_error_id():
@@ -70,13 +83,13 @@ def generate_error_id():
 @app.errorhandler(500)
 def internalError(error):
     error_id = generate_error_id()
-    sys.stderr.write(f'Error ID: {error_id}\n')
-    return render_template('errors/500.html', error_id=error_id), 500
+    logger.error("Internal server error %s", error_id, exc_info=True)
+    return render_template('errors/500.jinja2', error_id=error_id), 500
 
 
 @app.errorhandler(403)
 def forbidden(_error):
-    return render_template('errors/403.html'), 403
+    return render_template('errors/403.jinja2'), 403
 
 
 def _init_db():

@@ -1,0 +1,73 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+<h2 class="title">ようこそ</h2>
+<div class="columns">
+    <div class="card column m-2">
+        <header class="card-header">
+            <p class="card-header-title">
+                <a href="{{ url_for('dashboard_bp.visited_pages') }}">閲覧履歴</a>
+            </p>
+        </header>
+        <div class="card-content">
+            <div class="content">
+                {% for file in visited_pages %}
+                    <a href="{{ url_for('user_bp.file', id=file.id) }}">{{ file.name }}</a><br>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="card column m-2">
+        <header class="card-header">
+            <p class="card-header-title">
+                <a href="{{ url_for('dashboard_bp.mystudies') }}">あなたの研究</a>
+            </p>
+        </header>
+        <div class="card-content">
+            <div class="content">
+                {% for study in mystudies %}
+                    <a href="{{ url_for('user_bp.study', id=study.id) }}">{{ study.name }}</a><br>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="card column m-2">
+        <header class="card-header">
+            <p class="card-header-title">
+                <a href="{{ url_for('dashboard_bp.helpful_pages') }}">高評価した研究</a>
+            </p>
+        </header>
+        <div class="card-content">
+            <div class="content">
+                {% for study in helpful_pages %}
+                    <a href="{{ url_for('user_bp.study', id=study.id) }}">{{ study.name }}</a><br>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <h2>ユーザー情報</h2>
+    <table>
+        <thead>
+            <th>項目</th>
+            <th>データ</th>
+        </thead>
+        <tr>
+            <th>ユーザー名</th>
+            <td>{{ current_user.name }}</td>
+        </tr>
+        <tr>
+            <th>表示名</th>
+            <td>{{ current_user.display_name }}</td>
+        </tr>
+        <tr>
+            <th>ユーザー識別符号</th>
+            <td>{{ current_user.id }}</td>
+        </tr>
+        <tr>
+            <th>利用開始日</th>
+            <td>{{ current_user.create_at.strftime('%Y年%m月%d日') }}</td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

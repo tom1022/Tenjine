@@ -1,0 +1,42 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+<h2 class="title">ログイン</h2>
+<div class="container">
+    <form method="post">
+        {{ form.csrf_token }}
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="notification is-danger">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {{ form.ad_disable(value="False") }}
+        <script>
+            function AD_Disable(){
+                $("#ad_disable").val("True");
+            }
+        </script>
+        <p>
+            ST番号とパスワード(校内のパソコンにログインするときのID)でログインすることが可能です
+        </p>
+        <div class="field">
+            <label class="label" for="name">ユーザー名</label>
+            <div class="contorol">
+                {{ form.name(class_="input", placeholder="ユーザー名を入力", autocomplete="off") }}
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">パスワード</label>
+            <div class="contorol">
+                {{ form.password(class_="input", placeholder="パスワードを入力")}}
+            </div>
+        </div>
+        <div class="contorol">
+            <input type="submit" value="ログイン" class="button is-link">
+        </div>
+    </form>
+</div>
+{% endblock %}

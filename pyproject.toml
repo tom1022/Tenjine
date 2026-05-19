@@ -1,0 +1,47 @@
+[project]
+name = "tenjine"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "flask>=3.1",
+    "flask-sqlalchemy>=3.1",
+    "sqlalchemy>=2.0",
+    "flask-login>=0.6.3",
+    "flask-migrate>=4.0",
+    "flask-marshmallow>=1.2",
+    "marshmallow>=3.23",
+    "marshmallow-sqlalchemy>=1.1",
+    "flask-wtf>=1.2",
+    "wtforms>=3.2",
+    "flask-session>=0.8",
+    "flask-paginate>=0.9",
+    "werkzeug>=3.1",
+    "jinja2>=3.1",
+    "markupsafe>=3.0",
+    "nh3>=0.2.17",
+    "python-ulid>=3.0",
+    "pdfminer.six>=20231228",
+    "pillow>=11.0",
+    "opencv-python>=4.10",
+    "numpy>=2.1",
+    "nltk>=3.9",
+    "wikipedia>=1.4",
+    "redis>=5.2",
+    "watchdog>=6.0",
+    "tqdm>=4.67",
+    "ldap3>=2.9",
+    "lxml>=5.3",
+    "markdown>=3.7",
+    "pymysql>=1.1",
+    "pyyaml>=6.0",
+    "pygments>=2.18",
+    "psutil>=6.1",
+]
+
+[project.optional-dependencies]
+production = [
+    "uwsgi>=2.0",
+]
+
+[tool.uv]
+package = false

@@ -1,73 +1,61 @@
 from dbapp import db
 from dbapp.models.tables import FILES, STUDIES
 
-import markdown, bleach
+import markdown
+import nh3
 
-allowed_tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'p', 'span', 'a', 'br', 'strong', 'em', 's', 'strike', 'del', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'th', 'tr', 'td', 'img', 'image', 'audio', 'video', 'input', 'pre', 'code', 'blockquote', 'figure', 'figcaption', 'abbr', 'details', 'summary', 'cite', 'sub', 'sup', 'time', 'address']
+allowed_tags = {
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'p', 'span', 'a', 'br',
+    'strong', 'em', 's', 'strike', 'del', 'ul', 'ol', 'li', 'table', 'thead',
+    'tbody', 'th', 'tr', 'td', 'img', 'image', 'audio', 'video', 'input',
+    'pre', 'code', 'blockquote', 'figure', 'figcaption', 'abbr', 'details',
+    'summary', 'cite', 'sub', 'sup', 'time', 'address',
+}
 allowed_attributes = {
-    '*': ['id'],
-    'a': ['href', 'title'],
-    'input': ['type', 'value', 'checked', 'disabled'],
-    'code': ['class'],
-    'div': ['class'],
-    'span': ['class'],
-    'img': ['src', 'alt'],
-    'audio': ['src', 'controls'],
-    'video': ['src', 'controls'],
+    '*': {'id'},
+    'a': {'href', 'title'},
+    'input': {'type', 'value', 'checked', 'disabled'},
+    'code': {'class'},
+    'div': {'class'},
+    'span': {'class'},
+    'img': {'src', 'alt'},
+    'audio': {'src', 'controls'},
+    'video': {'src', 'controls'},
 }
 
-bleach_config = {
-    'tags': allowed_tags,
-    'attributes': allowed_attributes,
-}
 
 def convertMarkdown(text):
     md = markdown.Markdown(extensions=['tables', 'fenced_code', 'codehilite', 'attr_list', 'footnotes', 'toc'])
-    return bleach.clean(md.convert(text), **bleach_config)
+    return nh3.clean(md.convert(text), tags=allowed_tags, attributes=allowed_attributes)
 
-# STUDIESのFILESエントリから削除されたものを非表示にして返す
+
 def FilterStudyFiles(study, admin):
-    # ファイルを更新日時の降順でソートする
     files = sorted(study.files, key=lambda file: file.create_at, reverse=True)
     if not admin:
-        # 削除されていないファイルのみを選択する
-        selected_files = []
-        for file in files:
-            if file.grave_data == False:
-                selected_files.append(file)
-        # 研究オブジェクトのfiles属性を書き換える
+        selected_files = [f for f in files if not f.grave_data]
         study.files = selected_files
-    # 研究オブジェクトを返す
     return study
 
-# 複数のSTUDIESのFILESエントリから削除されたものを非表示にして返す
+
 def FilterStudiesHiddenFiles(studies, admin):
-    # フィルターした研究オブジェクトのリストを作成する
     filtered_studies = []
-    # リストから研究オブジェクトを取り出す
     for study in studies:
-        # ファイルを更新日時の降順でソートする
         files = sorted(study.files, key=lambda file: file.create_at, reverse=True)
-        # カウンターを初期化する
         count = 0
-        # 削除されていない上位3ファイルのみを選択する
         selected_files = []
         for file in files:
-            if file.grave_data == False or admin:
+            if not file.grave_data or admin:
                 selected_files.append(file)
                 count += 1
                 if count == 4:
                     break
-        # 研究オブジェクトのfiles属性を書き換える
         study.files = selected_files
-        # フィルターした研究オブジェクトのリストに追加する
         filtered_studies.append(study)
-    # フィルターした研究オブジェクトのリストを返す
     return filtered_studies
 
 
-# SEARCH ENGIN
 from sqlalchemy import or_, and_
+
 
 def SearchEngine(
         search_terms=None,
@@ -78,18 +66,14 @@ def SearchEngine(
         sort_column="update_at",
         admin=False
     ):
-    # STUDIESとFILESのJOINを作成します。
     query = db.session.query(STUDIES).outerjoin(FILES)
 
-    # 検索対象のカラムを定義します。
     study_columns = [STUDIES.name, STUDIES.summary]
     file_columns = [FILES.summary, FILES.content]
 
-    # 検索条件を準備します。
     search_filters = []
 
     if search_terms:
-        # スペースで区切られた複数の単語でOR検索を実行します。
         search_words = search_terms.split()
         search_conditions = []
         for word in search_words:
@@ -103,25 +87,19 @@ def SearchEngine(
         search_filters.append(STUDIES.grave_data == False)
 
     if update_at_range:
-        # STUDIESのupdate_atの範囲指定
         start_date, end_date = update_at_range
-
         search_filters.append(STUDIES.update_at.between(start_date, end_date))
 
     if create_at_range:
-        # STUDIESのcreate_atの範囲指定
         start_date, end_date = create_at_range
         search_filters.append(STUDIES.create_at.between(start_date, end_date))
 
     if field != 0:
-        # STUDIESのfieldの値
         search_filters.append(STUDIES.field == field)
 
-    # 絞り込み条件を適用します。
     if search_filters:
         query = query.filter(and_(*search_filters))
 
-    # 並び替え条件を設定します。
     if sort_column == 'update_at':
         query = query.order_by(STUDIES.update_at.asc() if ascending else STUDIES.update_at.desc())
     elif sort_column == 'get_total_access_count':
@@ -131,27 +109,28 @@ def SearchEngine(
     else:
         query = query.order_by(STUDIES.create_at.asc() if ascending else STUDIES.create_at.desc())
 
-    # 結果を返します。FILESオブジェクトも取得します。
     studies = query.all()
-
     filtered_studies = FilterStudiesHiddenFiles(studies, admin)
 
-    # 空の場合はタイトルを変えて返します。
     if not search_terms:
         return [filtered_studies, "研究一覧"]
 
-    # FILESオブジェクトを取得します。
     for study in studies:
-        study.files = db.session.query(FILES).filter(FILES.study_id==study.id, or_(*[or_(FILES.summary.contains(f"%{term}%"), FILES.content.contains(f"%{term}%")) for term in search_words])).all()
+        study.files = db.session.query(FILES).filter(
+            FILES.study_id == study.id,
+            or_(*[or_(FILES.summary.contains(f"%{term}%"), FILES.content.contains(f"%{term}%")) for term in search_words])
+        ).all()
 
     filtered_studies = FilterStudiesHiddenFiles(studies, admin)
 
     return [filtered_studies, '"' + search_terms + '"の検索結果']
 
+
 import wikipedia
 from nltk.corpus import wordnet
 
 wikipedia.set_lang("ja")
+
 
 def wikipedia_summary(word):
     page = None
@@ -168,20 +147,18 @@ def wikipedia_summary(word):
                 similaritys.append(wordnet.synsets(word, lang="jpn")[0].path_similarity(wordnet.synsets(words, lang="jpn")[0]))
             except IndexError:
                 similaritys.append(0)
-    
+
         dic = dict(zip(wordlist, similaritys))
-        dic = sorted(dic.items(), key=lambda x:x[1], reverse=True)
+        dic = sorted(dic.items(), key=lambda x: x[1], reverse=True)
         nums = list(dict((x, y) for x, y in dic).values())
 
         if nums[0] >= 0.5:
             dic = list(dict((x, y) for x, y in dic).keys())
             word = dic[0]
             summary = str(wikipedia_summary(word))
-        else:
-            similarity = 0
 
     except Exception:
-        similarity = 0
+        pass
 
     try:
         similarity = wordnet.synsets(word, lang="jpn")[0].path_similarity(wordnet.synsets(page.title, lang="jpn")[0])
@@ -189,32 +166,29 @@ def wikipedia_summary(word):
         similarity = 0
 
     if page is not None:
-        if not word in page.title and not page.title in word:
+        if word not in page.title and page.title not in word:
             summary = "ユーザーによって追加されたタグ"
 
     return summary
 
+
 import hashlib
+
 
 def sha256_hash(path):
     with open(path, "rb") as f:
         hasher = hashlib.new("sha256")
         for chunk in iter(lambda: f.read(2048 * hasher.block_size), b''):
             hasher.update(chunk)
-
     return hasher.hexdigest()
+
 
 import re
 
+
 def clean_html(html):
-    # タグを削除する正規表現パターン
     tag_pattern = re.compile(r'<.*?>')
-
-    # タグを削除
     text = re.sub(tag_pattern, '', html)
-
-    # 別の要素同士のテキストに空白を挿入
     text_with_whitespace = re.sub(r'(\w)([^\w\s])', r'\1 \2', text)
     text_with_whitespace = re.sub(r'([^\w\s])(\w)', r'\1 \2', text_with_whitespace)
-
     return text_with_whitespace

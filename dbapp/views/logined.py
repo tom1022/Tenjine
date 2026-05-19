@@ -1,4 +1,5 @@
-import os, ulid, json, re
+import os, json, re
+from ulid import ULID
 from flask import Blueprint, render_template, jsonify, request, abort, url_for, redirect, flash
 from flask_login import login_required, current_user
 from flask_paginate import get_page_parameter, Pagination
@@ -31,9 +32,9 @@ def create_study():
             try:
                 form_title = form.title.data
                 form_raw_markdown = form.raw_markdown.data
-                form_tags = re.sub('(\[|\'|\]|\s)', '', form.tags.data).split(',')
+                form_tags = re.sub(r"(\[|'|\]|\s)", '',form.tags.data).split(',')
                 form_field = int(form.field.data)
-                id = ulid.new().str
+                id = str(ULID())
 
                 user = USERS.query.filter(USERS.id==str(current_user.id)).one()
 
@@ -118,7 +119,7 @@ def edit_study_update(id):
         try:
             form_title = study_form.title.data
             form_raw_markdown = study_form.raw_markdown.data
-            form_tags = re.sub('(\[|\'|\]|\s)', '', study_form.tags.data).split(',')
+            form_tags = re.sub(r"(\[|'|\]|\s)", '',study_form.tags.data).split(',')
             form_field = int(study_form.field.data)
 
             tag_list = []
@@ -255,7 +256,7 @@ def upload(parent_id):
                 form_summary = form.summary.data
                 form_type = form.type.data
                 form_pubyear = form.pubyear.data
-                file_id = ulid.new().str
+                file_id = str(ULID())
 
                 file = form.file.data
 

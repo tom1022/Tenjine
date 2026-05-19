@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, request, abort, session, jsonify, redirect, url_for, flash
 from flask_login import login_required
-from flask_principal import Permission, RoleNeed
 from flask_paginate import Pagination, get_page_parameter
-from dbapp import app, db
+from dbapp import app, db, admin_required
 from dbapp.models.tables import NEWS, TAGS, STUDIES, STUDYGRAVES, FILES, FILEGRAVES, USERS, ROLES, USER_ROLE
 from dbapp.form import PostNewsForm, TagForm, DeleteForm, AddRoleForm, DelRoleForm
 import os
@@ -11,12 +10,10 @@ import psutil
 
 admin_bp = Blueprint('admin_bp', __name__, template_folder='templates')
 
-admin_permission = Permission(RoleNeed('Admin'))
-
 
 @admin_bp.route('/')
 @login_required
-@admin_permission.require(403)
+@admin_required
 def index():
     return render_template(
         'admin-pages/index.html',
@@ -25,7 +22,7 @@ def index():
 
 @admin_bp.route('/edit_tag/<id>', methods=['GET', 'POST'])
 @login_required
-@admin_permission.require(403)
+@admin_required
 def edit_tag(id):
     data = TAGS.query.filter(TAGS.id==id).one_or_none()
     form = TagForm()
@@ -52,7 +49,7 @@ def edit_tag(id):
 
 @admin_bp.route('/result')
 @login_required
-@admin_permission.require(403)
+@admin_required
 def upload_result():
     id = request.args.get("id")
     try:
@@ -64,7 +61,7 @@ def upload_result():
 
 @admin_bp.route('/user')
 @login_required
-@admin_permission.require(403)
+@admin_required
 def user_list():
     users = USERS.query.all()
     page = request.args.get(get_page_parameter(), type=int, default=1)
@@ -79,7 +76,7 @@ def user_list():
 
 @admin_bp.route('/user/<id>')
 @login_required
-@admin_permission.require(403)
+@admin_required
 def user_detail(id):
     user = USERS.query.filter(USERS.id==id).one_or_none()
     if not user:
@@ -89,7 +86,7 @@ def user_detail(id):
 
 @admin_bp.route('/role', methods=['GET'])
 @login_required
-@admin_permission.require(403)
+@admin_required
 def role():
     admin = ROLES.query.filter(ROLES.name=='Admin').one_or_none()
     admins_list = USER_ROLE.query.filter(USER_ROLE.role_id==admin.id).all()
@@ -100,7 +97,7 @@ def role():
 
 @admin_bp.route('/addrole', methods=['POST'])
 @login_required
-@admin_permission.require(403)
+@admin_required
 def addrole():
     admin = ROLES.query.filter(ROLES.name=='Admin').one_or_none()
     admins_list = USER_ROLE.query.filter(USER_ROLE.role_id==admin.id).all()
@@ -125,7 +122,7 @@ def addrole():
 
 @admin_bp.route('/delrole', methods=['POST'])
 @login_required
-@admin_permission.require(403)
+@admin_required
 def delrole():
     admin = ROLES.query.filter(ROLES.name=='Admin').one_or_none()
     admins_list = USER_ROLE.query.filter(USER_ROLE.role_id==admin.id).all()
@@ -153,14 +150,14 @@ def delrole():
 
 @admin_bp.route('/postnews/', methods=['GET'])
 @login_required
-@admin_permission.require(403)
+@admin_required
 def postnews():
     form = PostNewsForm()
     return render_template('admin-pages/postnews.html', title="お知らせ作成", form=form)
 
 @admin_bp.route('/postnews', methods=['POST'])
 @login_required
-@admin_permission.require(403)
+@admin_required
 def postnews_receive():
     add_news = NEWS(
         name = request.form.get('title'),
@@ -176,7 +173,7 @@ def postnews_receive():
 
 @admin_bp.route('/delete/', methods=['GET', 'POST'])
 @login_required
-@admin_permission.require(403)
+@admin_required
 def delete():
     form = DeleteForm()
     message = ''

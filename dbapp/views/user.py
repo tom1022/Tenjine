@@ -1,8 +1,8 @@
-import os, bleach, markdown
-from flask import Blueprint, render_template, request, redirect, send_file, abort, session, make_response, url_for, Markup
+import os
+from flask import Blueprint, render_template, request, redirect, send_file, abort, session, make_response, url_for
 from flask_paginate import Pagination, get_page_parameter
 from flask_login import current_user
-from sqlalchemy import desc, not_, func
+from sqlalchemy import desc, not_, func, case
 from datetime import datetime
 from dbapp import app, db
 from dbapp.models.tables import FILES, TAGS, VOTES, NEWS, STUDIES, FILEACCESS, FILEPREVIEW
@@ -18,17 +18,17 @@ def index():
     helpful_rank = db.session.query(
         STUDIES.id,
         STUDIES.name,
-        db.func.count(VOTES.study_id),
-        db.func.sum(db.case([(VOTES.helpful == True, 1), (VOTES.helpful == False, -1)], else_=0)),
+        func.count(VOTES.study_id),
+        func.sum(case((VOTES.helpful == True, 1), (VOTES.helpful == False, -1), else_=0)),
     ).outerjoin(
         VOTES,
         VOTES.study_id == STUDIES.id
     ).filter(
-        STUDIES.grave_data==False
+        STUDIES.grave_data == False
     ).group_by(
         STUDIES.id
     ).order_by(
-        db.func.sum(db.case([(VOTES.helpful == True, 1), (VOTES.helpful == False, -1)], else_=0)).desc()
+        func.sum(case((VOTES.helpful == True, 1), (VOTES.helpful == False, -1), else_=0)).desc()
     ).limit(10)
 
     return render_template(

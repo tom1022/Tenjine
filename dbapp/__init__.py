@@ -23,21 +23,6 @@ migrate = Migrate(app, db, render_as_batch=True)
 
 from .models import tables
 
-from dbapp.views.user import user_bp
-app.register_blueprint(user_bp, url_prefix='/')
-
-from dbapp.views.api import api
-app.register_blueprint(api, url_prefix='/api')
-
-from dbapp.views.auth import auth
-app.register_blueprint(auth)
-
-from dbapp.views.admin import admin_bp
-app.register_blueprint(admin_bp, url_prefix='/admin')
-
-from dbapp.views.logined import logined_bp
-app.register_blueprint(logined_bp, url_prefix='/')
-
 login_manager = LoginManager()
 login_manager.login_view = 'auth_bp.login'
 login_manager.init_app(app)
@@ -55,6 +40,22 @@ def admin_required(f):
             abort(403)
         return f(*args, **kwargs)
     return decorated
+
+
+from dbapp.views.user import user_bp
+app.register_blueprint(user_bp, url_prefix='/')
+
+from dbapp.views.api import api
+app.register_blueprint(api, url_prefix='/api')
+
+from dbapp.views.auth import auth
+app.register_blueprint(auth)
+
+from dbapp.views.admin import admin_bp
+app.register_blueprint(admin_bp, url_prefix='/admin')
+
+from dbapp.views.logined import logined_bp
+app.register_blueprint(logined_bp, url_prefix='/')
 
 
 @app.errorhandler(404)

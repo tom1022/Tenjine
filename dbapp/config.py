@@ -38,7 +38,9 @@ class ConfigWatcher:
             config = yaml.safe_load(file)
             self.config = config
             debug = config['Flask']['Debug']
-            uli = 'sqlite:///project.db' if config['database'] == 'SQLite' else \
+            data_dir = os.path.join(os.getcwd(), 'data')
+            os.makedirs(data_dir, exist_ok=True)
+            uli = f"sqlite:///{os.path.join(data_dir, 'project.db')}" if config['database'] == 'SQLite' else \
                 'mysql+pymysql://{user}:{password}@{host}/{db_name}?charset=utf8mb4'.format(**{
                     'user': config['MySQL']['username'],
                     'password': config['MySQL']['password'],

@@ -1,0 +1,50 @@
+# Title for this repository
+title: No Title
+
+# Database to use (MySQL or SQLite are available options)
+database: SQLite
+
+# Flask Configuration
+Flask:
+  # Whether to display the debug page
+  Debug: False
+
+# MySQL Database Configuration (required if database is set to MySQL)
+MySQL:
+  # Name of the MySQL database
+  dbname: database
+  # Host of the MySQL server
+  host: localhost
+  # Username for connecting to MySQL
+  username: root
+  # Password for connecting to MySQL
+  password: password
+
+# Directory for saving uploaded files
+SaveDir: /path/to/save/dir/
+
+# Redis Database Configuration
+Redis:
+  # Host of the Redis server
+  host: localhost
+  # Port on which Redis is listening
+  port: 6379
+  # Password for accessing the Redis server
+  password: password
+
+# Active Directory Server Configuration
+ADServer:
+  # Whether to use Active Directory for authentication
+  use: False
+  # IP address or hostname of the Active Directory server
+  address: localhost
+  # List of associated domains
+  domains:
+    - ad
+    - example.com
+    - net
+  groups:
+    # Group for granting the "Admin" role (for teachers)
+    Admin: Teachers
+    # Group for granting the "Student" role (for students)
+    Student: Students
